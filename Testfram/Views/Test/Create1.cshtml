@@ -1,0 +1,100 @@
+﻿
+@{
+    ViewData["Title"] = "Create";
+}
+<canvas id="canvas" width="800" height="500" style="border: 1px solid #000;"></canvas>
+
+<div>
+    <button onclick="startDrawing()">Start Drawing</button>
+    <button onclick="saveDrawing()">Save Drawing</button>
+    <button onclick="clearCanvas()">Clear Canvas</button>
+</div>
+
+@section scripts {
+    <script>
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        var isDrawing = false;
+        var drawingData = [];
+
+        function startDrawing() {
+            isDrawing = true;
+            drawingData = [];
+
+            canvas.addEventListener("mousedown", function (e) {
+                if (isDrawing) {
+                    var startX = e.clientX - canvas.offsetLeft;
+                    var startY = e.clientY - canvas.offsetTop;
+                    drawingData.push({
+                        type: "start",
+                        x: startX,
+                        y: startY
+                    });
+                }
+            });
+
+            canvas.addEventListener("mousemove", function (e) {
+                if (isDrawing) {
+                    var currentX = e.clientX - canvas.offsetLeft;
+                    var currentY = e.clientY - canvas.offsetTop;
+                    drawingData.push({
+                        type: "draw",
+                        x: currentX,
+                        y: currentY
+                    });
+                    draw();
+                }
+            });
+
+            canvas.addEventListener("mouseup", function (e) {
+                if (isDrawing) {
+                    isDrawing = false;
+                    drawingData.push({
+                        type: "end"
+                    });
+                    draw();
+                }
+            });
+        }
+
+        function draw() {
+            clearCanvas();
+            context.beginPath();
+            drawingData.forEach(function (item) {
+                if (item.type === "start") {
+                    context.moveTo(item.x, item.y);
+                } else if (item.type === "draw") {
+                    context.lineTo(item.x, item.y);
+                }
+            });
+            context.stroke();
+        }
+
+        function saveDrawing() {
+            // Serialize drawing data to XML format
+            var xmlData = '<?xml version="1.0" encoding="UTF-8"?><drawing>';
+            drawingData.forEach(function (item) {
+                xmlData += '<point x="' + item.x + '" y="' + item.y + '" type="' + item.type + '" />';
+            });
+            xmlData += '</drawing>';
+
+            // Send the drawing data to the server to save as an XML file
+            $.ajax({
+                url: '@Url.Action("SaveDrawing", "AutoCAD")',
+                type: 'POST',
+                data: { drawingData: xmlData },
+                success: function (response) {
+                    console.log(response); // Replace this with your own success handling logic
+                },
+                error: function (xhr, status, error) {
+                    console.error(error); // Replace this with your own error handling logic
+                }
+            });
+        }
+
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+}
+

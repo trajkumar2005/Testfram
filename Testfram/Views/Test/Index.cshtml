@@ -1,0 +1,213 @@
+﻿@model Draw_model
+
+
+<div style="display: flex;">
+    <div style="flex: 0 0 100px;">
+        <button onclick="drawLine()">Draw Line</button>
+        <button onclick="drawRectangle()">Draw Rectangle</button>
+        <button onclick="clearCanvas()">Clear Canvas</button>
+        <button onclick="drawclircle()"> circle </button>
+        <div>
+            Color: <input type="color" id="colorPicker" value="#000000">
+            Thickness: <input type="number" id="thickness" min="1" max="10" value="1">
+        </div>
+    </div>
+    <div style="flex: 0 0 100px;">
+        <canvas id="canvas" width="800" height="500" style="border: 1px solid #000;"></canvas>
+    </div>
+    <div style="flex: 0 0 200px;">
+        <div>
+            <button onclick="saveDrawing()">Save xml</button>
+        </div>
+
+        <div>
+            <button onclick="loadxml()">read xml</button>
+        </div>
+
+    </div>
+</div>
+<table id="tblCustomers" class="table bg-primary" cellpadding="0" cellspacing="0" c>
+    <tr>
+        <th style="width:100px">Partnumber</th>
+        <th style="width:50px">Pipe_od</th>
+        <th style="width:50px">Dia a</th>
+        <th style="width:50px">B</th>
+        <th style="width:50px">C</th>
+        <th style="width:50px">D</th>
+        <th style="width:50px">E</th>
+        <th style="width:50px">THK</th>
+        <th style="width:50px">ID</th>
+        <th style="width:50px">size</th>
+    </tr>
+
+
+    <tr>
+        <td class="Partnumber">
+            <input type="text" id="partnub" name="partnub" style="width:100px">
+        </td>
+        <td class="Pipe_od">
+            <input type="text" id="Pipe_od" name="Pipe_od" style="width:50px">
+        </td>
+        <td class="Dia a">
+            <input type="text" id="Dia A" name="Dia A" style="width:50px">
+        </td>
+        <td class="B">
+            <input type="text" id="B" name="B" style="width:50px">
+        </td>
+        <td class="C">
+            <input type="text" id="C" name="C" style="width:50px">
+        </td>
+        <td class="C">
+            <input type="text" id="d" name="d" style="width:50px">
+        </td>
+        <td class="B">
+            <input type="text" id="E" name="E" style="width:50px">
+        </td>
+        <td class="B">
+            <input type="text" id="ThK" name="Thk" style="width:50px">
+        </td>
+        <td class="B">
+            <input type="text" id="ID" name="id" style="width:50px">
+        </td>
+        <td class="B">
+            <input type="text" id="Size" name="size" style="width:50px">
+        </td>
+    </tr>
+
+</table>
+
+
+@section scripts {
+    <script>
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        var isDrawing = false;
+        var startX, startY;
+        var shapecolor = "#000256";
+        var tickless = 5;
+        var shapes = [];
+
+        function drawLine() {
+            canvas.addEventListener("mousedown", function (e) {
+                isDrawing = true;
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+
+            });
+
+            canvas.addEventListener("mouseup", function (e) {
+                if (isDrawing) {
+                    alert("line");
+                    var endX = e.clientX - canvas.offsetLeft;
+                    var endY = e.clientY - canvas.offsetTop;
+                    context.beginPath();
+                    context.moveTo(startX, startY);
+                    context.lineTo(endX, endY);
+                     context.strokeStyle = shapecolor;
+                     context.lineWidth = 5;
+                    context.stroke();
+                    shapes.push({ type: 'line', startX: startX, startY: startY, endX: endX, endY: endY });
+                }
+            });
+        }
+
+        function drawRectangle() {
+            canvas.addEventListener("mousedown", function (e) {
+                isDrawing = true;
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+            });
+
+            canvas.addEventListener("mouseup", function (e) {
+                if (isDrawing) {
+                    var endX = e.clientX - canvas.offsetLeft;
+                    var endY = e.clientY - canvas.offsetTop;
+                    var width = endX - startX;
+                    var height = endY - startY;
+                    context.strokeRect(startX, startY, width, height);
+                    isDrawing = false;
+                    shapes.push({ type: 'rectangle', startX: startX, startY: startY, width: width, height: height });
+                }
+            });
+        }
+
+        function drawclircle() {
+            canvas.addEventListener("mousedown", function (e) {
+                isDrawing = true;
+                startX = 0;
+                startY = 0;
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+                //context.color = shapecolor;
+                //  context.thickness = 4;
+            });
+
+            canvas.addEventListener("mouseup", function (e) {
+                if (isDrawing) {
+                    var endX = e.clientX - canvas.offsetLeft;
+                    var endY = e.clientY - canvas.offsetTop;
+                    var radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                    context.beginPath();
+                    context.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    context.stroke();
+                    isDrawing = false;
+                    shape.push({ type: 'circle', startX: startX, startY: startY, radius: radius });
+                }
+            });
+
+        }
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            shapes = [];
+        }
+
+        function saveDrawing() {
+            var xml = '<?xml version="1.0" encoding="utf-8"?><Drawing>';
+
+            shapes.forEach(function (shape) {
+                if (shape.type === 'line') {
+                    xml += '<Line startX="' + shape.startX + '" startY="' + shape.startY + '" endX="' + shape.endX + '" endY="' + shape.endY + '" />';
+                } else if (shape.type === 'rectangle') {
+                    xml += '<Rectangle startX="' + shape.startX + '" startY="' + shape.startY + '" width="' + shape.width + '" height="' + shape.height + '" />';
+                } else if (shape.type == 'circle') {
+                    xml += '<circle startX="' + shape.startX + '" startY="' + shape.startY + '" width="' + shape.width + '" height="' + shape.height + '" />';
+                }
+            });
+
+            xml += '</Drawing>';
+
+            // You can save the XML to the server or download it as a file
+            // For demonstration purposes, we will just display it in an alert
+            alert(xml);
+            $.ajax({
+                url: '@Url.Action("Create", "test")',
+                type: 'POST',
+                data: { data1: xml },
+                success: function (response) {
+                    alert("Save succesful");
+                    console.log(response); // Replace this with your own success handling logic
+                },
+                error: function (xhr, status, error) {
+                    console.error(error); // Replace this with your own error handling logic
+                }
+            });
+        }
+
+        function loadxml() {
+            $.ajax({
+                url: '@Url.Action("load", "Test")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (points) {
+                    if (points) {
+                        shapes = points;
+                        draw();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error); // Replace this with your own error handling logic
+                }
+            });
+        }
+    </script>
+}
